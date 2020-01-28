@@ -8,19 +8,15 @@ use regex::Regex;
 use hdrhistogram::Histogram;
 use std::vec::Vec;
 
-#[derive(Debug)]
-struct Params {
-    min: u64,
-    max: u64,
-}
+mod params;
 
 fn help(program: &str, opts: Options) {
     let brief = format!("Usage: {} [options]", program);
-    print!("{}", opts.usage(&brief));
+    eprint!("{}", opts.usage(&brief));
     std::process::exit(1);
 }
 
-fn get_args(p: &mut Params) {
+fn get_args(p: &mut params::Params) {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
     let mut opts = Options::new();
@@ -32,7 +28,7 @@ fn get_args(p: &mut Params) {
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => { m }
         Err(f) => {
-            println!("{} use -h,--help to display help screen", f.to_string());
+            eprintln!("{} use -h,--help to display help screen", f.to_string());
             std::process::exit(1);
         }
     };
@@ -47,7 +43,7 @@ fn get_args(p: &mut Params) {
                 match m.parse::<u64>() {
                     Ok(m) => { m }
                     Err(f) => {
-                        println!("Invalid value: {}", f);
+                        eprintln!("Invalid value: {}", f);
                         std::process::exit(1);
                     }
                 }
@@ -58,9 +54,11 @@ fn get_args(p: &mut Params) {
 
     p.min = parse_number("m", 1);
     p.max = parse_number("M", 10000000000);
+
+    eprintln!("{}", p);
 }
 
-fn run(p: &Params) {
+fn run(p: &params::Params) {
     let re = Regex::new(r"^\d+$").unwrap();
     let mut histogram = Histogram::<u64>::new_with_bounds(p.min, p.max, 3).unwrap();
 
@@ -76,36 +74,35 @@ fn run(p: &Params) {
         }
     }
 
-    //let mut perc = histogram.iter_quantiles(1);
-
-    //loop {
-    //    match perc.next() {
-    //        Some(p) => {
-    //            if p.count_since_last_iteration() > 0 {
-    //                println!("[{:.10},{:.3}],", p.quantile(), p.value_iterated_to() as f32 / 1000.0);
-    //            }
-    //            //println!("{:?}", p);
-    //        }
-    //        None => { break; }
-    //    }
-    //}
-
     let p_vector: Vec<f64> = vec![ 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 99.0, 100.0 ];
 
-    //let p_array: [f64; 6] = [ 0.05, 0.1, 0.2, 0.4, 0.9, 1.0 ];
+    print!("{{");
+
+    let mut first = true;
 
     for p in &p_vector {
-        println!("[{:.2},{:.3}],", p, histogram.value_at_quantile(*p / 100.0)  as f64 / 1000.0);
-    }
-    //println!("At 5% {:.3}", histogram.value_at_quantile(0.05) as f32 / 1000.0);
-    //println!("At 90% {:.3}", histogram.value_at_quantile(0.9) as f32 / 1000.0);
+        if first {
+            first = false;
+            print!("\"data\":[");
+        } else {
+            print!("\n,");
+        }
 
-    println!("Standard deviation {:.3}", histogram.stdev() / 1000.0);
-    println!("Mean {:.3}", histogram.mean() / 1000.0);
+        print!("[{:.2},{:.3}]", p, histogram.value_at_quantile(*p / 100.0)  as f64 / 1000.0);
+    }
+
+    println!("]");
+
+    println!(",\"stdDev\": {:.3}", histogram.stdev() / 1000.0);
+    println!(",\"mean\": {:.3}", histogram.mean() / 1000.0);
+    println!(",\"min\": {:.3}", histogram.min() as f64 / 1000.0);
+    println!(",\"max\": {:.3}", histogram.max() as f64 / 1000.0);
+    println!(",\"count\": {:.3}", histogram.len());
+    println!("}}");
 }
 
 fn main() -> Result<(), ()> {
-    let mut p = Params {
+    let mut p = params::Params {
         min: 0,
         max: 0,
     };
