@@ -9,6 +9,7 @@ fn run(p: &core::params::Params) {
     for f in &p.files {
         if first {
             first = false;
+            print!("{{\"graphMax\":{},\"chArray\":[", p.graph_max);
         } else {
             print!(",");
         }
@@ -21,16 +22,12 @@ fn run(p: &core::params::Params) {
             }
         }
     }
+
+    println!("]}}");
 }
 
 fn main() -> Result<(), ()> {
-    let mut p = core::params::Params {
-        min: 0,
-        max: 0,
-        files: Vec::new(),
-    };
-
-    core::params::parse_args(&mut p);
+    let p = core::args::parse_args();
     run(&p);
 
     Ok(())
