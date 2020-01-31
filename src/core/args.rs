@@ -13,6 +13,7 @@ pub fn parse_args() -> super::params::Params {
     let mut p = super::params::Params {
         min: 0,
         max: 0,
+        title: "Roundtrip perentiles".to_string(),
         graph_max: 100,
         files: Vec::new(),
     };
