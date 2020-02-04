@@ -9,7 +9,13 @@ fn run(p: &core::params::Params) {
     for f in &p.files {
         if first {
             first = false;
-            print!("{{\"graphMax\":{},\"chArray\":[", p.graph_max);
+            print!("{{\"title\":\"{}\"", p.title);
+
+            if p.sub_title.len() > 0 {
+                print!(",\"subTitle\":\"{}\"", p.sub_title);
+            }
+
+            print!(",\"graphMax\":{},\"chArray\":[", p.graph_max);
         } else {
             print!(",");
         }
