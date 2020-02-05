@@ -9,7 +9,7 @@ fn run(p: &core::params::Params) {
     for f in &p.files {
         if first {
             first = false;
-            print!("{{\"title\":\"{}\"", p.title);
+            print!("{{\"setup\":{{\"title\":\"{}\"", p.title);
 
             if p.sub_title.len() > 0 {
                 print!(",\"subTitle\":\"{}\"", p.sub_title);
@@ -29,7 +29,7 @@ fn run(p: &core::params::Params) {
         }
     }
 
-    println!("]}}");
+    println!("]}}}}");
 }
 
 fn main() -> Result<(), ()> {
